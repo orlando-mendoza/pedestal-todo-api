@@ -31,7 +31,8 @@
 (defn update-item
   [dbval list-id item-id item]
   (if (contains? dbval list-id)
-    (assoc-in dbval [list-id :items item-id] item)))
+    (assoc-in dbval [list-id :items item-id] item)
+    dbval))
 
 (def db-interceptor
   {:name :database-interceptor
@@ -126,9 +127,9 @@
    (fn [context]
      (if-let [list-id (get-in context [:request :path-params :list-id])]
        (if-let [item-id (get-in context [:request :path-params :item-id])]
-         (if-let [item (get-in context [:request :query-params :item])]
+         (if-let [name (get-in context [:request :query-params :name])]
            (-> context
-               (assoc :tx-data [update-item list-id item-id item]))
+               (assoc :tx-data [update-item list-id item-id name]))
            context)
          context)
        context))})
@@ -178,17 +179,23 @@
 
 (defn restart []
   (stop-dev)
-  (start-dev))
+  (start-dev)
+  ;;
+  )
 
 (defn test-request [verb url]
   (io.pedestal.test/response-for (::http/service-fn @server) verb url))
 
 (comment
   (require '[io.pedestal.test :as test])
+  (user/portal)
 
   (main/test-request :get "/todo")
 
-  (tap> (main/test-request :post "/todo?name=B-list"))
+  (tap> (main/test-request :post "/todo?name=A-list"))
+  (tap> (main/test-request :post "/todo/l25069?name=Lacinya"))
+  (tap> (main/test-request :get "/todo/l25069/i25090"))
+  (tap> (main/test-request :put "/todo/l25069/i25090?name=Pedestal-API"))
 
   (tap> :hello)
 
@@ -202,15 +209,15 @@
   (dissoc (test/response-for (:io.pedestal.http/service-fn @main/server) :delete "/todo") :body)
   ;; => {:status 404, :headers {"Content-Type" "text/plain"}}
 
-  (test/response-for (:io.pedestal.http/service-fn @main/server) :get "/todo/abcdef/12345")
+  (tap> (test/response-for (:io.pedestal.http/service-fn @main/server) :post "/todo/l21545?name=Pedetal"))
+  (test/response-for (:io.pedestal.http/service-fn @main/server) :put "/todo/l25394/i27296?name=FireGuns")
 
   (start-dev)
   (restart)
   (= [1] '(1))
+  (reset! database nil)
   ;;
   )
-
-
 
 
 
