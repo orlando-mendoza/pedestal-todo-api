@@ -31,8 +31,14 @@
 (defn update-item
   [dbval list-id item-id item]
   (if (contains? dbval list-id)
-    (assoc-in dbval [list-id :items item-id] item)
+     (assoc-in dbval [list-id :items item-id :name] item)
     dbval))
+
+(comment
+  (update-item @database "l19320" "i19355" "Pedestal-api")
+  (reset! database nil)
+  ;;
+  )
 
 (def db-interceptor
   {:name :database-interceptor
@@ -189,13 +195,16 @@
 (comment
   (require '[io.pedestal.test :as test])
   (user/portal)
+  (start-dev)
+  (restart)
 
   (main/test-request :get "/todo")
 
   (tap> (main/test-request :post "/todo?name=A-list"))
-  (tap> (main/test-request :post "/todo/l25069?name=Lacinya"))
+  (tap> (main/test-request :post "/todo/l19320?name=Pedetal"))
   (tap> (main/test-request :get "/todo/l25069/i25090"))
-  (tap> (main/test-request :put "/todo/l25069/i25090?name=Pedestal-API"))
+  (tap> (main/test-request :put "/todo/l19320/i19336?name=Lacinia"))
+  (main/test-request :put "/todo/l19320/i19355?name=Pedestal")
 
   (tap> :hello)
 
@@ -212,8 +221,7 @@
   (tap> (test/response-for (:io.pedestal.http/service-fn @main/server) :post "/todo/l21545?name=Pedetal"))
   (test/response-for (:io.pedestal.http/service-fn @main/server) :put "/todo/l25394/i27296?name=FireGuns")
 
-  (start-dev)
-  (restart)
+
   (= [1] '(1))
   (reset! database nil)
   ;;
